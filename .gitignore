@@ -3,6 +3,7 @@
 /.idea
 /.vscode
 /.vagrant
+composer.lock
 Homestead.json
 Homestead.yaml
 yarn-error.log
