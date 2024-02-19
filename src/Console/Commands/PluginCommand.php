@@ -10,29 +10,19 @@ use Symfony\Component\Console\Input\InputArgument;
 abstract class PluginCommand extends Command
 {
     /**
-     * @var Filesystem
-     */
-    protected $files;
-
-    /**
      * Create a new controller creator command instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
      * @return void
      */
-    public function __construct(Filesystem $files)
+    public function __construct(protected Filesystem $files)
     {
         parent::__construct();
-
-        $this->files = $files;
     }
 
     /**
      * Get the console command arguments.
-     *
-     * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of the plugin.'],
@@ -41,22 +31,18 @@ abstract class PluginCommand extends Command
 
     /**
      * Get the desired class name from the input.
-     *
-     * @return string
      */
-    protected function getNameInput()
+    protected function getNameInput(): string
     {
         return trim($this->argument('name'));
     }
 
     /**
      * Get the root namespace for the class.
-     *
-     * @return string
      */
-    protected function rootNamespace()
+    protected function rootNamespace(): string
     {
-        return rtrim($this->laravel->getNamespace(), "\\");
+        return rtrim($this->laravel->getNamespace(), '\\');
     }
 
     /**
@@ -70,12 +56,9 @@ abstract class PluginCommand extends Command
     }
 
     /**
-    * Build the directory for the class if necessary.
-    *
-    * @param  string  $path
-    * @return string
-    */
-    protected function makeDirectory($path)
+     * Build the directory for the class if necessary.
+     */
+    protected function makeDirectory(string $path): string
     {
         if (! $this->files->isDirectory(dirname($path))) {
             $this->files->makeDirectory(dirname($path), 0777, true, true);
@@ -86,9 +69,8 @@ abstract class PluginCommand extends Command
 
     /**
      * The path to the plugin directory.
-     * @return string
      */
-    protected function pluginPath()
+    protected function pluginPath(): string
     {
         $name = Str::replaceFirst($this->rootNamespace(), '', $this->getNameInput());
 
@@ -98,30 +80,25 @@ abstract class PluginCommand extends Command
     /**
      * Check if plugin exists on a given path.
      *
-     * @param string $pluginPath
-     * @return bool
+     * @param  string  $pluginPath
      */
-    protected function pluginExists($pluginPath)
+    protected function pluginExists($pluginPath): bool
     {
         return $this->files->exists($pluginPath);
     }
 
     /**
      * Name of the plugin in StudlyCase format.
-     *
-     * @return string
      */
-    protected function studlyName()
+    protected function studlyName(): string
     {
         return Str::studly($this->getNameInput());
     }
 
     /**
      * Name of the plugin in snake-case format.
-     *
-     * @return string
      */
-    protected function snakeName()
+    protected function snakeName(): string
     {
         return Str::snake($this->getNameInput(), '-');
     }

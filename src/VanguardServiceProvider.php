@@ -8,10 +8,8 @@ abstract class VanguardServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $instances = [];
 
@@ -24,10 +22,8 @@ abstract class VanguardServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $widgets = collect($this->widgets())->map(function ($class) {
             return $this->app->make($class);
@@ -47,15 +43,11 @@ abstract class VanguardServiceProvider extends ServiceProvider
 
     /**
      * Dashboard widgets.
-     *
-     * @return array
      */
-    abstract protected function widgets();
+    abstract protected function widgets(): array;
 
     /**
      * List of registered plugins.
-     *
-     * @return array
      */
-    abstract protected function plugins();
+    abstract protected function plugins(): array;
 }

@@ -4,6 +4,7 @@ namespace Vanguard\Plugins;
 
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\View\View;
 
 abstract class Widget
 {
@@ -11,34 +12,28 @@ abstract class Widget
      * The number of columns that widget should take on the dashboard.
      * Possible values are from 1 to 12. Set the width to NULL
      * if you don't want to disable the width class.
-     *
-     * @var string|null
      */
-    public $width = null;
+    public ?string $width = null;
 
     /**
-     * Permissions required for for viewing the widget.
-     * @var string|array
+     * Permissions required for viewing the widget.
      */
-    protected $permissions;
+    protected string|array|Closure $permissions;
 
     /**
      * Renders the widget HTML.
-     *
-     * @return mixed
      */
-    abstract public function render();
+    abstract public function render(): View;
 
     /**
      * Authorize the request to verify if a user should be able to
      * see the widget on the dashboard.
      *
-     * @param Authenticatable $user
      * @return bool
      */
     public function authorize(Authenticatable $user)
     {
-        if (is_object($this->permissions) && $this->permissions instanceof Closure) {
+        if ($this->permissions instanceof Closure) {
             return call_user_func($this->permissions, $user);
         }
 
@@ -53,11 +48,8 @@ abstract class Widget
 
     /**
      * Set permissions required for viewing the widget on the dashboard.
-     *
-     * @param $permissions
-     * @return $this
      */
-    public function permissions($permissions)
+    public function permissions($permissions): self
     {
         $this->permissions = $permissions;
 
@@ -67,10 +59,8 @@ abstract class Widget
     /**
      * Custom scripts that are required by this widget to work
      * and that should be rendered on the dashboard only.
-     *
-     * @return null
      */
-    public function scripts()
+    public function scripts(): ?View
     {
         return null;
     }

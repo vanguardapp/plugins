@@ -2,12 +2,12 @@
 
 namespace Vanguard\Plugins\Contracts;
 
+use Illuminate\Contracts\View\View;
+
 interface Hook
 {
     /**
      * Execute the hook action.
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function handle();
+    public function handle(): View;
 }

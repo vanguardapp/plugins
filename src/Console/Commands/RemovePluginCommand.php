@@ -24,19 +24,22 @@ class RemovePluginCommand extends PluginCommand
 
     /**
      * Execute the console command.
+     *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    public function handle()
+    public function handle(): void
     {
         if (! $this->pluginExists($this->pluginPath())) {
             $this->error("The plugin [{$this->studlyName()}] does not exist.");
+
             return;
         }
 
         if ($this->pluginIsStillActive()) {
             $message = "The [{$this->studlyName()}] plugin is still active. Please remove it from the list of active";
-            $message .= " plugins inside the VanguardServiceProvider first.";
+            $message .= ' plugins inside the VanguardServiceProvider first.';
             $this->error($message);
+
             return;
         }
 
@@ -49,10 +52,8 @@ class RemovePluginCommand extends PluginCommand
 
     /**
      * Check if the plugin that should be deleted is still active.
-     *
-     * @return bool
      */
-    private function pluginIsStillActive()
+    private function pluginIsStillActive(): bool
     {
         $pluginClassName = sprintf(
             "%s\%s",
@@ -66,9 +67,9 @@ class RemovePluginCommand extends PluginCommand
     /**
      * Uninstall plugin composer dependency.
      */
-    private function uninstallPluginDependency()
+    private function uninstallPluginDependency(): void
     {
-        $pluginFullName = sprintf("%s/%s", config('plugins.composer.vendor'), $this->snakeName());
+        $pluginFullName = sprintf('%s/%s', config('plugins.composer.vendor'), $this->snakeName());
 
         $command = Process::fromShellCommandline("composer remove {$pluginFullName}");
         $command->setWorkingDirectory(base_path());
@@ -85,12 +86,12 @@ class RemovePluginCommand extends PluginCommand
      *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    private function updateApplicationComposerFile()
+    private function updateApplicationComposerFile(): void
     {
         $composer = json_decode($this->files->get(base_path('composer.json')), true);
 
         $composer['repositories'] = collect($composer['repositories'])->filter(function ($repo) {
-            return ! isset($repo['url']) || $repo['url'] != './plugins/' . $this->studlyName();
+            return ! isset($repo['url']) || $repo['url'] != './plugins/'.$this->studlyName();
         })->toArray();
 
         $this->files->put(

@@ -43,9 +43,6 @@ class Vanguard
 
     /**
      * Register a new view hook.
-     *
-     * @param $name
-     * @param $handler
      */
     public static function hook($name, $handler)
     {
@@ -56,7 +53,6 @@ class Vanguard
      * Check if there are handlers registered for the
      * provided hook name.
      *
-     * @param $name
      * @return bool
      */
     public static function hasHook($name)
@@ -67,7 +63,6 @@ class Vanguard
     /**
      * Get all handlers for a given hook name.
      *
-     * @param $name
      * @return mixed
      */
     public static function getHookHandlers($name)
@@ -77,8 +72,6 @@ class Vanguard
 
     /**
      * Register the given plugins.
-     *
-     * @param array $plugins
      */
     public static function plugins(array $plugins)
     {
@@ -97,8 +90,6 @@ class Vanguard
 
     /**
      * Register the list of given dashboard widgets.
-     *
-     * @param array $widgets
      */
     public static function widgets(array $widgets)
     {
@@ -108,7 +99,6 @@ class Vanguard
     /**
      * Get the list of widgets available for the provided user.
      *
-     * @param Authenticatable $user
      * @return array
      */
     public static function availableWidgets(Authenticatable $user)
