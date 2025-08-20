@@ -5,7 +5,7 @@ namespace $PLUGIN_NAMESPACE$;
 use Route;
 use Illuminate\Database\Eloquent\Factory;
 use Vanguard\Plugins\Plugin;
-use Vanguard\Support\Sidebar\Item;
+use App\Support\Sidebar\Item;
 
 class $STUDLY_NAME$ extends Plugin
 {

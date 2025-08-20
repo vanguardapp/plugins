@@ -3,7 +3,7 @@
 namespace Vanguard\Plugins;
 
 use Illuminate\Support\ServiceProvider;
-use Vanguard\Support\Sidebar\Item;
+use App\Support\Sidebar\Item;
 
 abstract class Plugin extends ServiceProvider
 {
