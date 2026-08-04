@@ -79,7 +79,7 @@ class GeneratePluginCommand extends PluginCommand
     /**
      * Generate necessary plugin files.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     private function generateFiles(): void
     {
@@ -152,7 +152,7 @@ class GeneratePluginCommand extends PluginCommand
      * Update the main application composer file to include the
      * newly generated plugin.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     private function updateApplicationComposerFile(): void
     {

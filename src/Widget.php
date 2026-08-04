@@ -4,37 +4,44 @@ namespace Vanguard\Plugins;
 
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\View\View;
 
 abstract class Widget
 {
     /**
-     * The number of columns that widget should take on the dashboard.
-     * Possible values are from 1 to 12. Set the width to NULL
-     * if you don't want to disable the width class.
+     * The number of columns that the widget should take on the dashboard.
+     * Possible values are from 1 to 12. Set the width to NULL if you do
+     * not want a width class applied.
      */
     public ?string $width = null;
 
     /**
      * Permissions required for viewing the widget.
+     *
+     * @var string|array<int, string>|Closure
      */
-    protected string|array|Closure $permissions;
+    protected string|array|Closure $permissions = [];
 
     /**
-     * Renders the widget HTML.
+     * The Vue component registered by the plugin bundle,
+     * e.g. "user-activity::ActivityWidget".
      */
-    abstract public function render(): View;
+    abstract public function component(): string;
+
+    /**
+     * The props handed to the widget component.
+     *
+     * @return array<string, mixed>
+     */
+    abstract public function data(): array;
 
     /**
      * Authorize the request to verify if a user should be able to
      * see the widget on the dashboard.
-     *
-     * @return bool
      */
-    public function authorize(Authenticatable $user)
+    public function authorize(Authenticatable $user): bool
     {
         if ($this->permissions instanceof Closure) {
-            return call_user_func($this->permissions, $user);
+            return (bool) call_user_func($this->permissions, $user);
         }
 
         foreach ((array) $this->permissions as $permission) {
@@ -48,8 +55,10 @@ abstract class Widget
 
     /**
      * Set permissions required for viewing the widget on the dashboard.
+     *
+     * @param  string|array<int, string>|Closure  $permissions
      */
-    public function permissions($permissions): self
+    public function permissions(string|array|Closure $permissions): self
     {
         $this->permissions = $permissions;
 
@@ -57,11 +66,16 @@ abstract class Widget
     }
 
     /**
-     * Custom scripts that are required by this widget to work
-     * and that should be rendered on the dashboard only.
+     * Serialise the widget for the dashboard Inertia page.
+     *
+     * @return array{component: string, props: array<string, mixed>, width: ?string}
      */
-    public function scripts(): ?View
+    public function toArray(): array
     {
-        return null;
+        return [
+            'component' => $this->component(),
+            'props' => $this->data(),
+            'width' => $this->width,
+        ];
     }
 }

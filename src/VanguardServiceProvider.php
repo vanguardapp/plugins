@@ -25,29 +25,24 @@ abstract class VanguardServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $widgets = collect($this->widgets())->map(function ($class) {
-            return $this->app->make($class);
-        })->toArray();
+        $widgets = collect($this->widgets())
+            ->map(fn (string $class) => $this->app->make($class))
+            ->all();
 
         Vanguard::widgets($widgets);
-
-        \Blade::directive('hook', function ($name) {
-            return "<?php if (\Vanguard\Plugins\Vanguard::hasHook($name)) { 
-                collect(\Vanguard\Plugins\Vanguard::getHookHandlers($name))
-                    ->each(function (\$hook) {
-                        echo resolve(\$hook)->handle();
-                    });
-            } ?>";
-        });
     }
 
     /**
      * Dashboard widgets.
+     *
+     * @return array<int, class-string<Widget>>
      */
     abstract protected function widgets(): array;
 
     /**
      * List of registered plugins.
+     *
+     * @return array<int, class-string<Plugin>>
      */
     abstract protected function plugins(): array;
 }
