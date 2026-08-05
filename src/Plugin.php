@@ -18,9 +18,9 @@ abstract class Plugin extends ServiceProvider
     /**
      * The compiled plugin bundle that the host layout should load.
      *
-     * Plugin bundles externalise Vue, Inertia and PrimeVue and register their
-     * pages, slots and widgets against the global Vanguard runtime, so the host
-     * never needs rebuilding when a plugin is installed.
+     * Plugin bundles externalise Vue, Inertia and the Vanguard UI kit and
+     * register their pages, slots and widgets against the global Vanguard
+     * runtime, so the host never needs rebuilding when a plugin is installed.
      *
      * @return array{js?: string, css?: string}
      */
