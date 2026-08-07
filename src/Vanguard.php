@@ -16,9 +16,9 @@ class Vanguard
     public static array $plugins = [];
 
     /**
-     * All of the registered Vanguard dashboard widgets.
+     * All of the registered Vanguard dashboard widgets, keyed by class name.
      *
-     * @var array<int, Widget>
+     * @var array<string, Widget>
      */
     public static array $widgets = [];
 
@@ -32,10 +32,18 @@ class Vanguard
     /**
      * Register a handler for a named UI slot position.
      *
+     * Registering the same handler twice is a no-op. Handlers are declared as
+     * class names, so a repeat only ever means the provider booted again --
+     * under Octane, or between tests, where the static outlives the container.
+     *
      * @param  class-string<Slot>  $handler
      */
     public static function slot(string $name, string $handler): void
     {
+        if (in_array($handler, self::$slots[$name] ?? [], true)) {
+            return;
+        }
+
         self::$slots[$name][] = $handler;
     }
 
@@ -103,11 +111,16 @@ class Vanguard
     /**
      * Register the list of given dashboard widgets.
      *
+     * Keyed by class name so that a provider booting twice replaces its
+     * widgets rather than appending a second copy of each.
+     *
      * @param  array<int, Widget>  $widgets
      */
     public static function widgets(array $widgets): void
     {
-        self::$widgets = array_merge(self::$widgets, $widgets);
+        foreach ($widgets as $widget) {
+            self::$widgets[$widget::class] = $widget;
+        }
     }
 
     /**
