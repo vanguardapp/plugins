@@ -3,77 +3,97 @@
 namespace Vanguard\Plugins;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Collection;
+use Vanguard\Plugins\Contracts\Slot;
 
 class Vanguard
 {
     /**
-     * All of the registered Vanguard plugins.
+     * All of the registered Vanguard plugins, keyed by class name.
      *
-     * @var array
+     * @var array<string, Plugin>
      */
-    public static $plugins = [];
+    public static array $plugins = [];
 
     /**
-     * All of the registered Vanguard dashboard widgets.
+     * All of the registered Vanguard dashboard widgets, keyed by class name.
      *
-     * @var array
+     * @var array<string, Widget>
      */
-    public static $widgets = [];
+    public static array $widgets = [];
 
     /**
-     * All of the registered Vanguard scripts.
+     * All registered UI slot handlers, keyed by position name.
      *
-     * @var array
+     * @var array<string, array<int, class-string<Slot>>>
      */
-    public static $scripts = [];
+    public static array $slots = [];
 
     /**
-     * All of the registered Vanguard styles.
+     * Register a handler for a named UI slot position.
      *
-     * @var array
-     */
-    public static $styles = [];
-
-    /**
-     * All registered Vanguard view hooks.
+     * Registering the same handler twice is a no-op. Handlers are declared as
+     * class names, so a repeat only ever means the provider booted again --
+     * under Octane, or between tests, where the static outlives the container.
      *
-     * @var array
+     * @param  class-string<Slot>  $handler
      */
-    public static $hooks = [];
-
-    /**
-     * Register a new view hook.
-     */
-    public static function hook($name, $handler)
+    public static function slot(string $name, string $handler): void
     {
-        self::$hooks[$name][] = $handler;
+        if (in_array($handler, self::$slots[$name] ?? [], true)) {
+            return;
+        }
+
+        self::$slots[$name][] = $handler;
     }
 
     /**
-     * Check if there are handlers registered for the
-     * provided hook name.
-     *
-     * @return bool
+     * Determine whether any handler is registered for the given position.
      */
-    public static function hasHook($name)
+    public static function hasSlot(string $name): bool
     {
-        return isset(self::$hooks[$name]);
+        return ! empty(self::$slots[$name]);
     }
 
     /**
-     * Get all handlers for a given hook name.
+     * The handler class names registered for the given position.
      *
-     * @return mixed
+     * @return array<int, class-string<Slot>>
      */
-    public static function getHookHandlers($name)
+    public static function slotHandlers(string $name): array
     {
-        return data_get(self::$hooks, $name);
+        return self::$slots[$name] ?? [];
+    }
+
+    /**
+     * Resolve a slot position into serialisable payloads for Inertia.
+     *
+     * @param  array<string, mixed>  $context
+     * @return array<int, array{component: string, props: array<string, mixed>}>
+     */
+    public static function resolveSlot(string $name, array $context = []): array
+    {
+        $resolved = [];
+
+        foreach (self::slotHandlers($name) as $handler) {
+            /** @var Slot $instance */
+            $instance = resolve($handler);
+
+            $resolved[] = [
+                'component' => $instance->component(),
+                'props' => $instance->data($context),
+            ];
+        }
+
+        return $resolved;
     }
 
     /**
      * Register the given plugins.
+     *
+     * @param  array<string, Plugin>  $plugins
      */
-    public static function plugins(array $plugins)
+    public static function plugins(array $plugins): void
     {
         self::$plugins = array_merge(self::$plugins, $plugins);
     }
@@ -81,28 +101,59 @@ class Vanguard
     /**
      * Get the list of registered plugins.
      *
-     * @return array
+     * @return array<string, Plugin>
      */
-    public static function availablePlugins()
+    public static function availablePlugins(): array
     {
         return self::$plugins;
     }
 
     /**
      * Register the list of given dashboard widgets.
+     *
+     * Keyed by class name so that a provider booting twice replaces its
+     * widgets rather than appending a second copy of each.
+     *
+     * @param  array<int, Widget>  $widgets
      */
-    public static function widgets(array $widgets)
+    public static function widgets(array $widgets): void
     {
-        self::$widgets = array_merge(self::$widgets, $widgets);
+        foreach ($widgets as $widget) {
+            self::$widgets[$widget::class] = $widget;
+        }
     }
 
     /**
      * Get the list of widgets available for the provided user.
      *
-     * @return array
+     * @return Collection<int, Widget>
      */
-    public static function availableWidgets(Authenticatable $user)
+    public static function availableWidgets(Authenticatable $user): Collection
     {
         return collect(self::$widgets)->filter->authorize($user)->values();
+    }
+
+    /**
+     * Every plugin owned asset that the host layout must load.
+     *
+     * @return array<int, array{js?: string, css?: string}>
+     */
+    public static function assets(): array
+    {
+        return collect(self::$plugins)
+            ->map(fn (Plugin $plugin) => $plugin->assets())
+            ->filter(fn (array $assets) => ! empty($assets['js']) || ! empty($assets['css']))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Reset the registry. Intended for use in tests.
+     */
+    public static function flush(): void
+    {
+        self::$plugins = [];
+        self::$widgets = [];
+        self::$slots = [];
     }
 }

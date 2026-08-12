@@ -2,6 +2,7 @@
 
 namespace Vanguard\Plugins\Console\Commands;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Vanguard\Plugins\Vanguard;
@@ -25,7 +26,7 @@ class RemovePluginCommand extends PluginCommand
     /**
      * Execute the console command.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function handle(): void
     {
@@ -84,7 +85,7 @@ class RemovePluginCommand extends PluginCommand
      * Update the main application composer file and remove
      * the reference to the plugin.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     private function updateApplicationComposerFile(): void
     {
